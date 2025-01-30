@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>QR Code Label Generator</title>
+    <style>
+        body { 
+            font-family: system-ui, -apple-system, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        .controls {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .control-group {
+            flex: 1;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            font-size: 16px;
+            margin-top: 4px;
+        }
+        .preview {
+            border: 1px solid #ccc;
+            padding: 10px;
+            width: 384px; /* 2 inches at 192 DPI */
+            height: 192px; /* 1 inch at 192 DPI */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            margin: 0 auto 20px;
+        }
+        .print-button {
+            background: #0070f3;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+        }
+        .print-button:disabled {
+            background: #ccc;
+        }
+        
+        @media print {
+            body { 
+                margin: 0;
+                padding: 0;
+            }
+            .container, .controls {
+                display: none;
+            }
+            #printArea {
+                display: block !important;
+            }
+            .print-preview {
+                border: none;
+                padding: 0;
+                width: 2in !important;
+                height: 1in !important;
+                page-break-after: always;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+        }
+        #printArea {
+            display: none;
+        }
+    </style>
+    <!-- Load QR Code library from CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>QR Code Label Generator</h1>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label>Item Description:</label>
+                <input type="text" id="itemInput" placeholder="Enter item description...">
+            </div>
+            <div class="control-group">
+                <label>Number of Labels:</label>
+                <select id="labelCount">
+                    <option value="1">1 Label</option>
+                    <option value="2">2 Labels</option>
+                    <option value="3">3 Labels</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="preview" id="qrPreview">
+            <div id="qrContent"></div>
+        </div>
+
+        <button class="print-button" onclick="printLabels()" id="printButton" disabled>
+            Print QR Code Labels
+        </button>
+
+        <div id="printArea"></div>
+    </div>
+
+    <script>
+        const input = document.getElementById('itemInput');
+        const qrContent = document.getElementById('qrContent');
+        const printButton = document.getElementById('printButton');
+        const labelCount = document.getElementById('labelCount');
+        const printArea = document.getElementById('printArea');
+
+        // Clear any existing QR codes
+        qrContent.innerHTML = '';
+        
+        // Create QR code object
+        let qr = new QRCode(qrContent, {
+            width: 128,
+            height: 128,
+            colorDark: "#000000",
+            colorLight: "#ffffff",
+        });
+
+        input.addEventListener('input', updatePreview);
+        labelCount.addEventListener('change', updatePreview);
+
+        function updatePreview() {
+            const text = input.value;
+            
+            if (text) {
+                qr.clear();
+                qr.makeCode(text);
+                printButton.disabled = false;
+            } else {
+                qrContent.innerHTML = '';
+                printButton.disabled = true;
+            }
+        }
+
+        function printLabels() {
+            const count = parseInt(labelCount.value);
+            
+            // Generate print content
+            let printContent = '';
+            
+            // Create the specified number of QR code labels
+            for (let i = 0; i < count; i++) {
+                printContent += `
+                    <div class="print-preview">
+                        <div style="display: flex; justify-content: center; align-items: center;">
+                            ${qrContent.innerHTML}
+                        </div>
+                    </div>`;
+            }
+            
+            // Update print area
+            printArea.innerHTML = printContent;
+            
+            // Trigger print
+            window.print();
+        }
+    </script>
+</body>
+</html>
