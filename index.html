@@ -76,6 +76,13 @@
         #printArea {
             display: none;
         }
+        /*QR code sizing for print*/
+        .print-qr {
+            width: 1in !important;
+            height:1in !important;
+            margin: auto;
+        }
+        
     </style>
     <!-- Load QR Code library from CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -120,7 +127,7 @@
         // Clear any existing QR codes
         qrContent.innerHTML = '';
         
-        // Create QR code object
+        // Create QR code object for preview
         let qr = new QRCode(qrContent, {
             width: 128,
             height: 128,
@@ -146,23 +153,36 @@
 
         function printLabels() {
             const count = parseInt(labelCount.value);
+            const text = input.value;
             
-            // Generate print content
-            let printContent = '';
+            // Clear print area
+            printArea.innerHTML  = '';
             
             // Create the specified number of QR code labels
             for (let i = 0; i < count; i++) {
-                printContent += `
-                    <div class="print-preview">
-                        <div style="display: flex; justify-content: center; align-items: center;">
-                            ${qrContent.innerHTML}
-                        </div>
-                    </div>`;
+                //create a container for this label
+               const labelContainer = document.createELement('div');
+                labelContainer.className = 'print-preview';
+
+                //Create a container for the QR code
+                const qrContainer = document.createELemenet('div');
+                qrContainer.className = 'print-qr';
+
+                //Add containers to the document
+                label.Container.appendChild(qrContainer);
+                printArea.appendChild(labelContainer);
+
+                //Generate new QR code in this container
+                new QRCode(qrContainer, {
+                    text: text,
+                    width: 192 //1 inch at 192 DPI
+                    height: 192,
+                    colorDark: "#000000"
+                    colorLight: "#ffffff",
+                });
             }
             
-            // Update print area
-            printArea.innerHTML = printContent;
-            
+                  
             // Trigger print
             window.print();
         }
